@@ -1,0 +1,36 @@
+{
+    "version": "1.12.2",
+    "sheep": {
+        "minX" : -10,
+        "maxX": 10,
+        "minZ": -20,
+        "maxZ": 0,
+        "y": 64,
+        "colormask": 65535,
+        "idlePosition": {
+            "x": 0,
+            "y": 64,
+            "z": -10
+        }
+    },
+    "storage": {
+        "maxWoolInsideInventory": 576,
+        "standingPosition": {
+            "x": 40,
+            "y": 64,
+            "z": 41
+        },
+        "lookAt": {
+            "x": 41,
+            "y": 63,
+            "z": 41
+        }
+    },
+    "login": {
+        "gapTicks": 60,
+        "sequence": [
+            "/login password",
+            "/res tp somewhere"
+        ]
+    }
+}

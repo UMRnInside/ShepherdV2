@@ -1,3 +1,8 @@
+# ShepherdV2 part
+config.json
+etc/*.json
+
+
 # Logs
 logs
 *.log

@@ -1,0 +1,7 @@
+{
+    "main": "src/main.js",
+    "dependencies": {
+        "mineflayer": "^3.14.1",
+        "mineflayer-pathfinder": "^1.9.1"
+    }
+}

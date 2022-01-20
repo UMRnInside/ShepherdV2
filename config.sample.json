@@ -26,6 +26,18 @@
             "z": 41
         }
     },
+    "shears": {
+        "standingPosition": {
+            "x": 50,
+            "y": 64,
+            "z": 51
+        },
+        "chestPosition": {
+            "x": 51,
+            "y": 64,
+            "z": 51
+        }
+    },
     "login": {
         "gapTicks": 60,
         "sequence": [

@@ -15,6 +15,7 @@ function makeShepherd(host, port, username, password, config) {
     bot.loadPlugin(pathfinder);
 
     bot.shepherdConfig = config;
+    bot.hasOngoingReset = false;
     bot.shepherdWorking = false;
 
     bot.once('spawn', async () => {
@@ -32,7 +33,15 @@ function makeShepherd(host, port, username, password, config) {
             await bot.waitForTicks(config.login.gapTicks);
         }
         bot.shepherdWorking = true;
-        shepherdWorkloop(bot);
+        try {
+            shepherdWorkloop(bot);
+        } catch (err) {
+            // mineflayer-pathfind.GoalChanged
+            if (err.name !== 'GoalChanged') {
+                console.log(err);
+                Reset(bot);
+            }
+        }
     });
     return bot;
 }
@@ -43,13 +52,16 @@ async function botGoto(bot, position, range) {
     try {
         await bot.pathfinder.goto(goal);
     } catch (err) {
+        if (err.name === 'GoalChanged') {
+            return;
+        }
         console.log(vec);
         console.log(err);
         bot.pathfinder.stop();
     }
 }
 
-async function storeWools(bot, woolCount) {
+async function storeWools(bot) {
     let config = bot.shepherdConfig;
     let standingPosition = Vec3(config.storage.standingPosition);
     let lookPosition = Vec3(config.storage.lookAt);
@@ -57,6 +69,8 @@ async function storeWools(bot, woolCount) {
         await botGoto(bot, standingPosition, 1.0);
         await bot.lookAt(lookPosition);
         // TODO: hardcoded wool item id: 35
+        let woolCount = inventory.countItemById(bot, 35);
+        console.log(`Tossing ${woolCount} wools...`);
         await bot.toss(35, null, woolCount);
     } catch (err) {
         console.log(err);
@@ -106,8 +120,11 @@ async function takeOneShears(bot) {
 }
 
 async function shepherdWorkloop(bot) {
+    console.log("Entering workloop");
     while (bot.shepherdWorking) {
         await bot.waitForTicks(10);
+        if (!bot.shepherdWorking || bot.hasOngoingReset) return;
+
         let config = bot.shepherdConfig;
 
         // TODO: hardcoded shears item id
@@ -120,7 +137,7 @@ async function shepherdWorkloop(bot) {
         // TODO: hardcoded wool item id
         let woolCount = inventory.countItemById(bot, 35);
         if (woolCount >= config.storage.maxWoolInsideInventory) {
-            await storeWools(bot, woolCount);
+            await storeWools(bot);
             await botGoto(bot, config.sheep.idlePosition, 1.0);
             continue;
         }
@@ -144,6 +161,29 @@ async function shepherdWorkloop(bot) {
         await inventory.equipItem(bot, "shears", "hand");
         bot.useOn(sheep);
     }
+}
+
+async function Reset(bot) {
+    if (bot.hasOngoingReset) return;
+    console.log("Reset!");
+    bot.hasOngoingReset = true;
+    bot.shepherdWorking = false;
+    bot.pathfinder.stop();
+    bot.clearControlStates();
+    let config = bot.shepherdConfig;
+    await bot.waitForTicks(config.reset.gapTicks);
+    for (let i in config.reset.sequence) {
+        bot.chat(config.reset.sequence[i]);
+        await bot.waitForTicks(config.reset.gapTicks);
+    }
+    bot.hasOngoingReset = false;
+    if (config.reset.backToIdlePosition) {
+        let idlePosition = Vec3(config.sheep.idlePosition);
+        await botGoto(bot, idlePosition);
+    }
+    await bot.waitForTicks(20);
+    bot.shepherdWorking = true;
+    shepherdWorkloop(bot);
 }
 
 module.exports = {

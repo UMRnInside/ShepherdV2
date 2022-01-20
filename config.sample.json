@@ -24,5 +24,13 @@
             "/login password",
             "/res tp somewhere"
         ]
+    },
+    "reset": {
+        "backToIdlePosition": true,
+        "gapTicks": 60,
+        "sequence": [
+            "/spawn",
+            "/res tp somewhere"
+        ]
     }
 }

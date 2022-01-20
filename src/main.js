@@ -11,6 +11,6 @@ let port = parseInt(process.argv[4]);
 let name = process.argv[5];
 let password = process.argv[6];
 let config = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
-console.log(host, port, name, password, config);
+// console.log(host, port, name, password, config);
 
 let bot = shepherd.makeShepherd(host, port, name, password, config);

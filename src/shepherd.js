@@ -1,6 +1,7 @@
 const mineflayer = require('mineflayer');
 const sheeputil = require('./utils/sheeputil');
 const inventory = require('./utils/inventory');
+const chatControl = require('./chatcontrol');
 const Vec3 = require('vec3');
 const { pathfinder, Movements, goals: { GoalNear } } = require('mineflayer-pathfinder');
 
@@ -13,12 +14,21 @@ function makeShepherd(host, port, username, password, config) {
         version: config.version 
     });
     bot.loadPlugin(pathfinder);
+    chatControl.addChatControl(bot, config.chatControl);
 
     bot.shepherdConfig = config;
     bot.hasOngoingReset = false;
+    bot.shepherdWorkloop = async function() {
+        await shepherdWorkloop(bot);
+    }
+    bot.shepherdReset = async function() {
+        await Reset(bot);
+    };
+
     bot.shepherdWorking = false;
 
     bot.once('spawn', async () => {
+        console.log("first spawn");
         const mcData = require("minecraft-data")(bot.version);
         const defaultMove = new Movements(bot, mcData);
         defaultMove.allow1by1towers = false;
@@ -32,6 +42,7 @@ function makeShepherd(host, port, username, password, config) {
             bot.chat(config.login.sequence[i]);
             await bot.waitForTicks(config.login.gapTicks);
         }
+        if (!config.sheep.autostart) return;
         bot.shepherdWorking = true;
         try {
             shepherdWorkloop(bot);

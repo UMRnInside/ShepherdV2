@@ -7,36 +7,16 @@
         "maxZ": 0,
         "y": 64,
         "colormask": 65535,
-        "idlePosition": {
-            "x": 0,
-            "y": 64,
-            "z": -10
-        }
+        "idlePosition": [0, 64, 0]
     },
     "storage": {
         "maxWoolInsideInventory": 576,
-        "standingPosition": {
-            "x": 40,
-            "y": 64,
-            "z": 41
-        },
-        "lookAt": {
-            "x": 41,
-            "y": 63,
-            "z": 41
-        }
+        "standingPosition": [40, 64, 41],
+        "lookAt": [41, 63, 41]
     },
     "shears": {
-        "standingPosition": {
-            "x": 50,
-            "y": 64,
-            "z": 51
-        },
-        "chestPosition": {
-            "x": 51,
-            "y": 64,
-            "z": 51
-        }
+        "standingPosition": [50, 64, 51],
+        "chestPosition": [51, 64, 51]
     },
     "login": {
         "gapTicks": 60,

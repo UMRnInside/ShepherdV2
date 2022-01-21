@@ -1,7 +1,7 @@
 const inventory = require('./utils/inventory');
 
 function addChatPatterns(bot, config) {
-    let patterns = config.whisperPatterns;
+    let patterns = config.whisperRegexPatterns;
     for (let i in patterns) {
         bot.addChatPattern('whisper', RegExp(patterns[i]));
     }

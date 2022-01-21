@@ -14,3 +14,15 @@ let config = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
 // console.log(host, port, name, password, config);
 
 let bot = shepherd.makeShepherd(host, port, name, password, config);
+bot.on('kicked', (reason, loggedIn) => {
+    console.log("Kicked:", reason);
+    process.exit(0);
+});
+bot.on("end", (reason) => {
+    console.log("Disconnected:", reason);
+    process.exit(0);
+});
+bot.on('message', (msg) => {
+    const ChatMessage = require('prismarine-chat')(bot.version)
+    console.log(new ChatMessage(msg).toString())
+});

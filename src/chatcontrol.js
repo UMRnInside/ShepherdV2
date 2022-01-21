@@ -14,6 +14,7 @@ function addChatControl(bot, config) {
         }
         return false;
     }
+    addChatPatterns(bot, config);
     bot.on('whisper', async (username, message) => {
         if (username === bot.username) return;
         if (config.allowOwnersOnly && !isOwner(username)) {

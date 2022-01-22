@@ -1,19 +1,21 @@
-function floatEqual(a, b) {
-    return Math.abs(a-b) < 0.000001;
+function dist(bot, entity) {
+    const yPenalty = 10000.0;
+    let tmp = bot.entity.position.y - entity.position.y;
+    tmp = Math.abs(tmp) * yPenalty;
+    return tmp + bot.entity.position.xzDistanceTo(entity.position);
 }
+
 
 function findAvailableSheep(bot, woolMask) {
     let SheepMinX = bot.shepherdConfig.sheep.minX;
     let SheepMaxX = bot.shepherdConfig.sheep.maxX;
     let SheepMinZ = bot.shepherdConfig.sheep.minZ;
     let SheepMaxZ = bot.shepherdConfig.sheep.maxZ;
-    let SheepY = bot.shepherdConfig.sheep.y;
+    let minY = bot.shepherdConfig.sheep.minY;
+    let maxY = bot.shepherdConfig.sheep.maxY;
 
     function isInRange(l, x, r) {
         return l<=x && x<=r
-    }
-    function dist(entity) {
-        return bot.entity.position.manhattanDistanceTo(entity.position)
     }
     let total = 0;
     let not_sheared = 0;
@@ -30,7 +32,7 @@ function findAvailableSheep(bot, woolMask) {
             continue
         if (!isInRange(SheepMinZ, entity.position.z, SheepMaxZ))
             continue
-        if (!floatEqual(entity.position.y, SheepY))
+        if (!isInRange(minY, entity.position.y, maxY))
             continue
         total++;
 
@@ -49,7 +51,7 @@ function findAvailableSheep(bot, woolMask) {
 
         if (!target)
             target = entity
-        else if (dist(entity) < dist(target))
+        else if (dist(bot, entity) < dist(bot, target))
             target = entity
     }
     // console.log(total, "sheeps,", not_sheared, "shearable");
@@ -62,13 +64,11 @@ function findDroppedWool(bot) {
     let SheepMaxX = bot.shepherdConfig.sheep.maxX;
     let SheepMinZ = bot.shepherdConfig.sheep.minZ;
     let SheepMaxZ = bot.shepherdConfig.sheep.maxZ;
-    let SheepY = bot.shepherdConfig.sheep.y;
+    let minY = bot.shepherdConfig.sheep.minY;
+    let maxY = bot.shepherdConfig.sheep.maxY;
 
     function isInRange(l, x, r) {
         return l<=x && x<=r
-    }
-    function dist(entity) {
-        return bot.entity.position.manhattanDistanceTo(entity.position)
     }
     let target = null;
     for (let key in bot.entities) {
@@ -89,12 +89,13 @@ function findDroppedWool(bot) {
             continue
         if (!isInRange(SheepMinZ, entity.position.z, SheepMaxZ))
             continue
-        if (!floatEqual(entity.position.y, SheepY))
+        if (!isInRange(minY, entity.position.y, maxY))
             continue
+
 
         if (target === null) {
             target = entity;
-        } else if (dist(entity) < dist(target)) {
+        } else if (dist(bot, entity) < dist(bot, target)) {
             target = entity;
         }
     }

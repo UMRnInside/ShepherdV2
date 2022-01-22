@@ -6,7 +6,8 @@
         "maxX": 10,
         "minZ": -20,
         "maxZ": 0,
-        "y": 64,
+        "minY": 64,
+        "maxY": 64,
         "colormask": 65535,
         "idlePosition": [0, 64, 0]
     },

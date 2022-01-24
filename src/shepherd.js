@@ -14,6 +14,7 @@ function makeShepherd(host, port, username, password, config) {
         version: config.version 
     });
     bot.loadPlugin(pathfinder);
+    bot.pathfinder.thinkTimeout = 30000;
     chatControl.addChatControl(bot, config.chatControl);
 
     bot.shepherdConfig = config;

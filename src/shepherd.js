@@ -92,6 +92,7 @@ async function takeOneShears(bot) {
     let config = bot.shepherdConfig;
     await botGoto(bot, config.shears.standingPosition, 0);
     await bot.lookAt(Vec3(config.shears.chestPosition));
+    await bot.unequip("hand");
     const chestBlock = bot.blockAt(Vec3(config.shears.chestPosition));
     const chest = await bot.openContainer(chestBlock);
     // Copy-pasted from https://github.com/PrismarineJS/mineflayer/blob/master/examples/chest.js

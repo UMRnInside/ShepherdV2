@@ -67,6 +67,12 @@ async function botGoto(bot, position, range) {
         if (err.name === 'GoalChanged') {
             return;
         }
+        // ignore false-positive NoPath results 
+        if (err.name === 'NoPath') {
+            console.log("Warning: NoPath");
+            console.log(vec);
+            return;
+        }
         console.log(vec);
         console.log(err);
         bot.pathfinder.stop();
@@ -168,7 +174,7 @@ async function shepherdWorkloop(bot) {
             continue;
         }
         // TODO: hardcoded range 1.0
-        await botGoto(bot, sheep.position, 0.0);
+        await botGoto(bot, sheep.position, 1.0);
         await bot.lookAt(sheep.position);
         // TODO: hardcoded item name "shears"
         await inventory.equipItem(bot, "shears", "hand");

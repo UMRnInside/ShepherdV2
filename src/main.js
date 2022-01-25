@@ -22,7 +22,10 @@ bot.on("end", (reason) => {
     console.log("Disconnected:", reason);
     process.exit(0);
 });
-bot.on('message', (msg) => {
-    const ChatMessage = require('prismarine-chat')(bot.version)
-    console.log(new ChatMessage(msg).toString())
-});
+
+if (config.logChats) {
+    bot.on('message', (msg) => {
+        const ChatMessage = require('prismarine-chat')(bot.version)
+        console.log(new ChatMessage(msg).toString())
+    });
+}

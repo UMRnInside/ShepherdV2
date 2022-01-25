@@ -39,5 +39,6 @@
         "allowOwnersOnly": true,
         "owners": ["Steve", "Alex"],
         "whisperRegexPatterns": []
-    }
+    },
+    "logChats": false
 }

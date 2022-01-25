@@ -14,6 +14,9 @@ let config = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
 // console.log(host, port, name, password, config);
 
 let bot = shepherd.makeShepherd(host, port, name, password, config);
+if (!bot) {
+    process.exit(1);
+}
 bot.on('kicked', (reason, loggedIn) => {
     console.log("Kicked:", reason);
     process.exit(0);

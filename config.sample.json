@@ -9,7 +9,14 @@
         "minY": 64,
         "maxY": 64,
         "colormask": 65535,
-        "idlePosition": [0, 64, 0]
+        "idlePosition": [0, 64, 0],
+        "scheduler": "nearest",
+        "schedulerConfig": {
+            "debug": false,
+            "servesPerStep": 1,
+            "yStepping": 1.0,
+            "yDistanceMultiplier": 6.0
+        }
     },
     "storage": {
         "maxWoolInsideInventory": 576,

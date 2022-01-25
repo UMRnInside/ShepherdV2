@@ -2,6 +2,7 @@ const mineflayer = require('mineflayer');
 const sheeputil = require('./utils/sheeputil');
 const inventory = require('./utils/inventory');
 const chatControl = require('./chatcontrol');
+const schedulers = require('./scheduler/scheduler');
 const Vec3 = require('vec3');
 const { pathfinder, Movements, goals: { GoalNear } } = require('mineflayer-pathfinder');
 
@@ -17,6 +18,15 @@ function makeShepherd(host, port, username, password, config) {
     bot.pathfinder.thinkTimeout = 30000;
 
     bot.shepherd = {};
+    // Note: reload scheduler when bot is reloaded
+    let schedulerFactory = schedulers[config.sheep.scheduler];
+    if (!schedulerFactory) {
+        console.log(`Error: invalid scheduler '${config.sheep.scheduler}'`);
+        console.log(`Scheduler must be one of '${Object.keys(schedulers)}'`);
+        return null;
+    }
+    bot.shepherd.scheduler = schedulerFactory(bot, config.sheep);
+
     chatControl.addChatControl(bot, config.chatControl);
 
     bot.shepherd.config = config;
@@ -143,7 +153,7 @@ async function takeOneShears(bot) {
 async function shepherdWorkloop(bot) {
     console.log("Entering workloop");
     while (bot.shepherd.working) {
-        await bot.waitForTicks(10);
+        await bot.waitForTicks(2);
         if (!bot.shepherd.working || bot.hasOngoingReset) return;
 
         let config = bot.shepherd.config;
@@ -176,6 +186,7 @@ async function shepherdWorkloop(bot) {
             continue;
         }
         // TODO: hardcoded range 1.0
+        console.log("Found sheep at", sheep.position);
         await botGoto(bot, sheep.position, 1.0);
         await bot.lookAt(sheep.position);
         // TODO: hardcoded item name "shears"

@@ -1,4 +1,4 @@
-function dist(bot, entity) {
+function defaultDist(bot, entity) {
     const yPenalty = 10000.0;
     let tmp = bot.entity.position.y - entity.position.y;
     tmp = Math.abs(tmp) * yPenalty;
@@ -13,6 +13,13 @@ function findAvailableSheep(bot, woolMask) {
     let SheepMaxZ = bot.shepherd.config.sheep.maxZ;
     let minY = bot.shepherd.config.sheep.minY;
     let maxY = bot.shepherd.config.sheep.maxY;
+
+    let dist = defaultDist;
+    if (bot.shepherd.scheduler) {
+        dist = function(_bot, entity) {
+            return bot.shepherd.scheduler.getCostToEntity(entity);
+        }
+    }
 
     function isInRange(l, x, r) {
         return l<=x && x<=r
@@ -56,6 +63,11 @@ function findAvailableSheep(bot, woolMask) {
     }
     // console.log(total, "sheeps,", not_sheared, "shearable");
     // console.log(target.metadata)
+
+    // Served a sheep
+    if (bot.shepherd.scheduler) {
+        bot.shepherd.scheduler.onServed();
+    }
     return target;
 }
 
@@ -66,6 +78,14 @@ function findDroppedWool(bot) {
     let SheepMaxZ = bot.shepherd.config.sheep.maxZ;
     let minY = bot.shepherd.config.sheep.minY;
     let maxY = bot.shepherd.config.sheep.maxY;
+
+    let dist = defaultDist;
+    if (bot.shepherd.scheduler) {
+        dist = function(_bot, entity) {
+            return bot.shepherd.scheduler.getCostToEntity(entity);
+        }
+    }
+
 
     function isInRange(l, x, r) {
         return l<=x && x<=r
@@ -99,6 +119,7 @@ function findDroppedWool(bot) {
             target = entity;
         }
     }
+    // Picking dropped wool serves no sheep, so we don't call onServe()
     return target;
 }
 

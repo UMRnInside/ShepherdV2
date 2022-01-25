@@ -15,18 +15,20 @@ function makeShepherd(host, port, username, password, config) {
     });
     bot.loadPlugin(pathfinder);
     bot.pathfinder.thinkTimeout = 30000;
+
+    bot.shepherd = {};
     chatControl.addChatControl(bot, config.chatControl);
 
-    bot.shepherdConfig = config;
-    bot.hasOngoingReset = false;
-    bot.shepherdWorkloop = async function() {
+    bot.shepherd.config = config;
+    bot.shepherd.hasOngoingReset = false;
+    bot.shepherd.workloop = async function() {
         await shepherdWorkloop(bot);
     }
-    bot.shepherdReset = async function() {
+    bot.shepherd.reset = async function() {
         await Reset(bot);
     };
 
-    bot.shepherdWorking = false;
+    bot.shepherd.working = false;
 
     bot.once('spawn', async () => {
         console.log("first spawn");
@@ -44,7 +46,7 @@ function makeShepherd(host, port, username, password, config) {
             await bot.waitForTicks(config.login.gapTicks);
         }
         if (!config.sheep.autostart) return;
-        bot.shepherdWorking = true;
+        bot.shepherd.working = true;
         try {
             shepherdWorkloop(bot);
         } catch (err) {
@@ -80,7 +82,7 @@ async function botGoto(bot, position, range) {
 }
 
 async function storeWools(bot) {
-    let config = bot.shepherdConfig;
+    let config = bot.shepherd.config;
     let standingPosition = Vec3(config.storage.standingPosition);
     let lookPosition = Vec3(config.storage.lookAt);
     try {
@@ -96,7 +98,7 @@ async function storeWools(bot) {
 }
 
 async function takeOneShears(bot) {
-    let config = bot.shepherdConfig;
+    let config = bot.shepherd.config;
     await botGoto(bot, config.shears.standingPosition, 0);
     await bot.lookAt(Vec3(config.shears.chestPosition));
     await bot.unequip("hand");
@@ -140,11 +142,11 @@ async function takeOneShears(bot) {
 
 async function shepherdWorkloop(bot) {
     console.log("Entering workloop");
-    while (bot.shepherdWorking) {
+    while (bot.shepherd.working) {
         await bot.waitForTicks(10);
-        if (!bot.shepherdWorking || bot.hasOngoingReset) return;
+        if (!bot.shepherd.working || bot.hasOngoingReset) return;
 
-        let config = bot.shepherdConfig;
+        let config = bot.shepherd.config;
 
         // TODO: hardcoded shears item id
         let shearsCount = inventory.countItemById(bot, 359);
@@ -185,11 +187,11 @@ async function shepherdWorkloop(bot) {
 async function Reset(bot) {
     if (bot.hasOngoingReset) return;
     console.log("Reset!");
-    bot.hasOngoingReset = true;
-    bot.shepherdWorking = false;
+    bot.shepherd.hasOngoingReset = true;
+    bot.shepherd.working = false;
     bot.pathfinder.stop();
     bot.clearControlStates();
-    let config = bot.shepherdConfig;
+    let config = bot.shepherd.config;
     await bot.waitForTicks(config.reset.gapTicks);
     for (let i in config.reset.sequence) {
         bot.chat(config.reset.sequence[i]);
@@ -201,7 +203,7 @@ async function Reset(bot) {
         await botGoto(bot, idlePosition);
     }
     await bot.waitForTicks(20);
-    bot.shepherdWorking = true;
+    bot.shepherd.working = true;
     shepherdWorkloop(bot);
 }
 

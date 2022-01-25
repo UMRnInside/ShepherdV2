@@ -27,7 +27,7 @@ function addChatControl(bot, config) {
                 break;
             case /^reset$/.test(message):
                 bot.whisper(username, "Reseting...");
-                await bot.shepherdReset();
+                await bot.shepherd.reset();
                 break;
             case /^quit$/.test(message):
                 bot.quit();
@@ -36,16 +36,16 @@ function addChatControl(bot, config) {
                 inventory.sayItems(bot);
                 break;
             case /^stop$/.test(message):
-                bot.shepherdWorking = false;
+                bot.shepherd.working = false;
                 bot.whisper(username, "Stopping...");
                 break;
             case /^start$/.test(message):
-                if (!bot.shepherdWorking) {
+                if (!bot.shepherd.working) {
                     bot.whisper(username, "Starting...");
                     await bot.waitForTicks(60);
                     bot.whisper(username, "Entering workloop...");
-                    bot.shepherdWorking = true;
-                    bot.shepherdWorkloop();
+                    bot.shepherd.working = true;
+                    bot.shepherd.workloop();
                 } else {
                     bot.whisper(username, "Bot is already working!");
                 }

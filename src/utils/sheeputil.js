@@ -7,12 +7,12 @@ function dist(bot, entity) {
 
 
 function findAvailableSheep(bot, woolMask) {
-    let SheepMinX = bot.shepherdConfig.sheep.minX;
-    let SheepMaxX = bot.shepherdConfig.sheep.maxX;
-    let SheepMinZ = bot.shepherdConfig.sheep.minZ;
-    let SheepMaxZ = bot.shepherdConfig.sheep.maxZ;
-    let minY = bot.shepherdConfig.sheep.minY;
-    let maxY = bot.shepherdConfig.sheep.maxY;
+    let SheepMinX = bot.shepherd.config.sheep.minX;
+    let SheepMaxX = bot.shepherd.config.sheep.maxX;
+    let SheepMinZ = bot.shepherd.config.sheep.minZ;
+    let SheepMaxZ = bot.shepherd.config.sheep.maxZ;
+    let minY = bot.shepherd.config.sheep.minY;
+    let maxY = bot.shepherd.config.sheep.maxY;
 
     function isInRange(l, x, r) {
         return l<=x && x<=r
@@ -60,12 +60,12 @@ function findAvailableSheep(bot, woolMask) {
 }
 
 function findDroppedWool(bot) {
-    let SheepMinX = bot.shepherdConfig.sheep.minX;
-    let SheepMaxX = bot.shepherdConfig.sheep.maxX;
-    let SheepMinZ = bot.shepherdConfig.sheep.minZ;
-    let SheepMaxZ = bot.shepherdConfig.sheep.maxZ;
-    let minY = bot.shepherdConfig.sheep.minY;
-    let maxY = bot.shepherdConfig.sheep.maxY;
+    let SheepMinX = bot.shepherd.config.sheep.minX;
+    let SheepMaxX = bot.shepherd.config.sheep.maxX;
+    let SheepMinZ = bot.shepherd.config.sheep.minZ;
+    let SheepMaxZ = bot.shepherd.config.sheep.maxZ;
+    let minY = bot.shepherd.config.sheep.minY;
+    let maxY = bot.shepherd.config.sheep.maxY;
 
     function isInRange(l, x, r) {
         return l<=x && x<=r

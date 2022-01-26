@@ -2,6 +2,7 @@
     "version": "1.12.2",
     "sheep": {
         "autostart": true,
+        "shearDistance": 1.5,
         "minX" : -10,
         "maxX": 10,
         "minZ": -20,

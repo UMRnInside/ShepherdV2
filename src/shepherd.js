@@ -75,20 +75,23 @@ async function botGoto(bot, position, range) {
     let goal = new GoalNear(vec.x, vec.y, vec.z, range);
     try {
         await bot.pathfinder.goto(goal);
+        return true;
     } catch (err) {
         if (err.name === 'GoalChanged') {
-            return;
+            return false;
         }
         // ignore false-positive NoPath results 
         if (err.name === 'NoPath') {
             console.log("Warning: NoPath");
+            console.log(bot.entity.position);
             console.log(vec);
-            return;
+            return false;
         }
         console.log(vec);
         console.log(err);
         bot.pathfinder.stop();
     }
+    return false;
 }
 
 async function storeWools(bot) {
@@ -185,10 +188,15 @@ async function shepherdWorkloop(bot) {
             await botGoto(bot, config.sheep.idlePosition, 1.0);
             continue;
         }
-        // TODO: hardcoded range 1.0
         console.log("Found sheep at", sheep.position);
-        await botGoto(bot, sheep.position, 1.0);
-        await bot.lookAt(sheep.position);
+
+        // Make 3 attempts
+        let success = bot.entity.position.distanceTo(sheep.position) <= 0.5;
+        for (let i=0;i<3 && !success;i++) {
+            success = await botGoto(bot, sheep.position, config.sheep.shearDistance);
+            await bot.waitForTicks(2);
+        }
+        await bot.lookAt(sheep.position, true);
         // TODO: hardcoded item name "shears"
         await inventory.equipItem(bot, "shears", "hand");
         bot.useOn(sheep);

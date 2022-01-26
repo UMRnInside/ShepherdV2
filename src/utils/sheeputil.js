@@ -5,6 +5,14 @@ function defaultDist(bot, entity) {
     return tmp + bot.entity.position.xzDistanceTo(entity.position);
 }
 
+function isPossiblyStucked(bot, entityPosition) {
+    // Only block.boundingBox is required
+    let blockPosition = entityPosition.floored();
+    let block = bot.blockAt(blockPosition, false);
+    if (!block) return false;
+    // Note: prismarine-block may alter block.boundingBox definition
+    return block.boundingBox === "block";
+}
 
 function findAvailableSheep(bot, woolMask) {
     let SheepMinX = bot.shepherd.config.sheep.minX;
@@ -53,13 +61,18 @@ function findAvailableSheep(bot, woolMask) {
 
         // Unwanted color
         let match = (1 << (sheep_info & 0xF)) & woolMask;
-        if (!match)
-            continue
+        if (!match) {
+            continue;
+        }
 
-        if (!target)
-            target = entity
-        else if (dist(bot, entity) < dist(bot, target))
-            target = entity
+        if (isPossiblyStucked(bot, entity.position)) {
+            continue;
+        }
+        if (!target) {
+            target = entity;
+        } else if (dist(bot, entity) < dist(bot, target)) {
+            target = entity;
+        }
     }
     // console.log(total, "sheeps,", not_sheared, "shearable");
     // console.log(target.metadata)
@@ -112,7 +125,9 @@ function findDroppedWool(bot) {
         if (!isInRange(minY, entity.position.y, maxY))
             continue
 
-
+        if (isPossiblyStucked(bot, entity.position)) {
+            continue;
+        }
         if (target === null) {
             target = entity;
         } else if (dist(bot, entity) < dist(bot, target)) {

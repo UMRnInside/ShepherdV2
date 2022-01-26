@@ -4,7 +4,7 @@ const inventory = require('./utils/inventory');
 const chatControl = require('./chatcontrol');
 const schedulers = require('./scheduler/scheduler');
 const Vec3 = require('vec3');
-const { pathfinder, Movements, goals: { GoalNear } } = require('mineflayer-pathfinder');
+const { pathfinder, Movements, goals: { GoalNear, GoalFollow } } = require('mineflayer-pathfinder');
 
 function makeShepherd(host, port, username, password, config) {
     let bot = mineflayer.createBot({
@@ -92,6 +92,17 @@ async function botGoto(bot, position, range) {
         bot.pathfinder.stop();
     }
     return false;
+}
+
+async function botFollow(bot, entity, range) {
+    let goal = new GoalFollow(entity, range);
+    try {
+        await bot.pathfinder.goto(goal);
+        return true;
+    } catch (err) {
+        console.log(err);
+        return false;
+    }
 }
 
 async function storeWools(bot) {
@@ -197,7 +208,7 @@ async function shepherdWorkloop(bot) {
 
         let droppedWool = sheeputil.findDroppedWool(bot, config);
         if (droppedWool) {
-            await botGoto(bot, droppedWool.position, 0.0);
+            await botGoto(bot, droppedWool.position, 0.5);
             continue;
         }
         let colormask = config.sheep.colormask;
@@ -209,13 +220,12 @@ async function shepherdWorkloop(bot) {
         }
         console.log("Found sheep at", sheep.position);
 
-        // Make 3 attempts
-        let success = bot.entity.position.distanceTo(sheep.position) <= 0.5;
-        for (let i=0;i<3 && !success;i++) {
-            success = await botGoto(bot, sheep.position, config.sheep.shearDistance);
-            await bot.waitForTicks(2);
+        let distance = bot.entity.position.distanceTo(sheep.position);
+        let nearEnough = distance <= 0.8;
+        if (!nearEnough) {
+            await botFollow(bot, sheep, config.sheep.shearDistance);
         }
-        await bot.lookAt(sheep.position, true);
+        bot.lookAt(sheep.position, true);
         // TODO: hardcoded item name "shears"
         await inventory.equipItem(bot, "shears", "hand");
         bot.useOn(sheep);

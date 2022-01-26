@@ -22,7 +22,8 @@
     "storage": {
         "maxWoolInsideInventory": 576,
         "standingPosition": [40, 64, 41],
-        "lookAt": [41, 63, 41]
+        "lookAt": [41, 63, 41],
+        "useChests": false
     },
     "shears": {
         "standingPosition": [50, 64, 51],

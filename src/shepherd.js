@@ -99,12 +99,31 @@ async function storeWools(bot) {
     let standingPosition = Vec3(config.storage.standingPosition);
     let lookPosition = Vec3(config.storage.lookAt);
     try {
-        await botGoto(bot, standingPosition, 1.0);
+        await botGoto(bot, standingPosition, 0.1);
         await bot.lookAt(lookPosition);
         // TODO: hardcoded wool item id: 35
         let woolCount = inventory.countItemById(bot, 35);
-        console.log(`Tossing ${woolCount} wools...`);
-        await bot.toss(35, null, woolCount);
+        if (config.storage.useChests) {
+            const chest = await bot.openContainer(bot.blockAt(lookPosition));
+            console.log(`Depositing ${woolCount} wools...`);
+            // TODO: faster depositing
+            // chest.deposit() stucks on spigot w/ NCP
+            let slots = chest.slots;
+            let chestEmptySlot = 0;
+            for (let i = chest.inventoryStart;i<=chest.inventoryEnd;i++) {
+                if (!slots[i]) continue;
+                if (slots[i].type !== 35) continue;
+                while (slots[chestEmptySlot] 
+                    && chestEmptySlot < chest.inventoryStart) chestEmptySlot++;
+                await bot.moveSlotItem(i, chestEmptySlot);
+                console.log(`Moved ${i} -> ${chestEmptySlot}`);
+                await bot.waitForTicks(4);
+            }
+            chest.close();
+        } else {
+            console.log(`Tossing ${woolCount} wools...`);
+            await bot.toss(35, null, woolCount);
+        }
     } catch (err) {
         console.log(err);
     }

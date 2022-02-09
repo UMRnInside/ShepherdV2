@@ -3,6 +3,7 @@ const sheeputil = require('./utils/sheeputil');
 const inventory = require('./utils/inventory');
 const chatControl = require('./chatcontrol');
 const schedulers = require('./scheduler/scheduler');
+const GoalNearXZY = require('./utils/GoalNearXzy');
 const Vec3 = require('vec3');
 const { pathfinder, Movements, goals: { GoalNear, GoalFollow } } = require('mineflayer-pathfinder');
 
@@ -70,9 +71,9 @@ function makeShepherd(host, port, username, password, config) {
     return bot;
 }
 
-async function botGoto(bot, position, range) {
+async function botGoto(bot, position, xzRange) {
     const vec = Vec3(position);
-    let goal = new GoalNear(vec.x, vec.y, vec.z, range);
+    let goal = new GoalNearXZY(vec.x, vec.y, vec.z, xzRange, 1.0);
     try {
         await bot.pathfinder.goto(goal);
         return true;
@@ -92,17 +93,6 @@ async function botGoto(bot, position, range) {
         bot.pathfinder.stop();
     }
     return false;
-}
-
-async function botFollow(bot, entity, range) {
-    let goal = new GoalFollow(entity, range);
-    try {
-        await bot.pathfinder.goto(goal);
-        return true;
-    } catch (err) {
-        console.log(err);
-        return false;
-    }
 }
 
 async function storeWools(bot) {
@@ -186,7 +176,6 @@ async function takeOneShears(bot) {
 async function shepherdWorkloop(bot) {
     console.log("Entering workloop");
     while (bot.shepherd.working) {
-        await bot.waitForTicks(2);
         if (!bot.shepherd.working || bot.hasOngoingReset) return;
 
         let config = bot.shepherd.config;
@@ -223,12 +212,15 @@ async function shepherdWorkloop(bot) {
         let distance = bot.entity.position.distanceTo(sheep.position);
         let nearEnough = distance <= 0.8;
         if (!nearEnough) {
-            await botFollow(bot, sheep, config.sheep.shearDistance);
+            console.log("Not near enough, approaching...")
+            await botGoto(bot, sheep.position, config.sheep.shearDistance);
         }
         bot.lookAt(sheep.position, true);
         // TODO: hardcoded item name "shears"
         await inventory.equipItem(bot, "shears", "hand");
         bot.useOn(sheep);
+        console.log("Shearing");
+        await bot.waitForTicks(1);
     }
 }
 

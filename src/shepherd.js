@@ -1,4 +1,5 @@
 const mineflayer = require('mineflayer');
+const watchdog = require('mineflayer-simple-watchdog');
 const sheeputil = require('./utils/sheeputil');
 const inventory = require('./utils/inventory');
 const chatControl = require('./chatcontrol');
@@ -13,8 +14,21 @@ function makeShepherd(host, port, username, password, config) {
         port: port,
         username: username,
         password: password,
-        version: config.version 
+        version: config.version,
+        watchdogConfig: {
+            timeout: config.watchdog.timeout ?? 30000,
+            resetAction: onTimeout 
+        }
     });
+    function onTimeout() {
+        if (config.watchdog.resetAction === "quit") {
+            bot.quit();
+        } else {
+            Reset();
+        }
+    }
+
+    bot.loadPlugin(watchdog);
     bot.loadPlugin(pathfinder);
     bot.pathfinder.thinkTimeout = 30000;
 
@@ -76,6 +90,7 @@ async function botGoto(bot, position, xzRange) {
     let goal = new GoalNearXZY(vec.x, vec.y, vec.z, xzRange, 1.0);
     try {
         await bot.pathfinder.goto(goal);
+        bot.watchdog.kick();
         return true;
     } catch (err) {
         if (err.name === 'GoalChanged') {
@@ -99,6 +114,7 @@ async function storeWools(bot) {
     let config = bot.shepherd.config;
     let standingPosition = Vec3(config.storage.standingPosition);
     let lookPosition = Vec3(config.storage.lookAt);
+    bot.watchdog.kick();
     try {
         await botGoto(bot, standingPosition, 0.1);
         await bot.lookAt(lookPosition);
@@ -118,6 +134,7 @@ async function storeWools(bot) {
                     && chestEmptySlot < chest.inventoryStart) chestEmptySlot++;
                 await bot.moveSlotItem(i, chestEmptySlot);
                 console.log(`Moved ${i} -> ${chestEmptySlot}`);
+                bot.watchdog.kick();
                 await bot.waitForTicks(4);
             }
             chest.close();
@@ -128,13 +145,16 @@ async function storeWools(bot) {
     } catch (err) {
         console.log(err);
     }
+    bot.watchdog.kick();
 }
 
 async function takeOneShears(bot) {
     let config = bot.shepherd.config;
+    bot.watchdog.kick();
     await botGoto(bot, config.shears.standingPosition, 0);
     await bot.lookAt(Vec3(config.shears.chestPosition));
     await bot.unequip("hand");
+    bot.watchdog.kick();
     const chestBlock = bot.blockAt(Vec3(config.shears.chestPosition));
     const chest = await bot.openContainer(chestBlock);
     // Copy-pasted from https://github.com/PrismarineJS/mineflayer/blob/master/examples/chest.js
@@ -171,9 +191,11 @@ async function takeOneShears(bot) {
         await bot.waitForTicks(60);
     }
     chest.close();
+    bot.watchdog.kick();
 }
 
 async function shepherdWorkloop(bot) {
+    bot.watchdog.start();
     console.log("Entering workloop");
     while (bot.shepherd.working) {
         if (!bot.shepherd.working || bot.hasOngoingReset) return;
@@ -216,10 +238,12 @@ async function shepherdWorkloop(bot) {
             await botGoto(bot, sheep.position, config.sheep.shearDistance);
         }
         bot.lookAt(sheep.position, true);
+        bot.watchdog.kick();
         // TODO: hardcoded item name "shears"
         await inventory.equipItem(bot, "shears", "hand");
         bot.useOn(sheep);
         console.log("Shearing");
+        bot.watchdog.kick();
         await bot.waitForTicks(1);
     }
 }
@@ -227,6 +251,7 @@ async function shepherdWorkloop(bot) {
 async function Reset(bot) {
     if (bot.hasOngoingReset) return;
     console.log("Reset!");
+    bot.watchdog.stop();
     bot.shepherd.hasOngoingReset = true;
     bot.shepherd.working = false;
     bot.pathfinder.stop();

@@ -44,6 +44,10 @@
             "/res tp somewhere"
         ]
     },
+    "watchdog": {
+        "timeout": 45000,
+        "resetAction": "quit"
+    },
     "chatControl": {
         "allowOwnersOnly": true,
         "owners": ["Steve", "Alex"],

@@ -42,6 +42,7 @@ function addChatControl(bot, config) {
                 break;
             case /^stop$/.test(message):
                 bot.shepherd.working = false;
+                bot.watchdog.stop();
                 bot.whisper(username, "Stopping...");
                 break;
             case /^start$/.test(message):

@@ -232,7 +232,7 @@ async function shepherdWorkloop(bot) {
         console.log("Found sheep at", sheep.position);
 
         let distance = bot.entity.position.distanceTo(sheep.position);
-        while (distance > 0.8) {
+        while (distance > config.sheep.shearDistance) {
             console.log("Not near enough, approaching...")
             await botGoto(bot, sheep.position, config.sheep.shearDistance);
             distance = bot.entity.position.distanceTo(sheep.position);

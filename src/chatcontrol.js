@@ -3,7 +3,8 @@ const inventory = require('./utils/inventory');
 function addChatPatterns(bot, config) {
     let patterns = config.whisperRegexPatterns;
     for (let i in patterns) {
-        bot.addChatPattern('whisper', RegExp(patterns[i]), { parse: true} );
+        console.log(RegExp(patterns[i]));
+        bot.addChatPattern('whisper', RegExp(patterns[i]), {parse: true, deprecate: true} );
     }
 }
 
@@ -17,10 +18,8 @@ function addChatControl(bot, config) {
     addChatPatterns(bot, config);
     // Wrapper of 'whisper' event
     // See https://github.com/PrismarineJS/mineflayer/issues/2478
-    bot.on('chat:whisper', (username, message) => {
-        bot.emit("whisper", username, message);
-    });
     bot.on('whisper', async (username, message) => {
+        console.log(username, message);
         if (username === bot.username) return;
         if (config.allowOwnersOnly && !isOwner(username)) {
             return;

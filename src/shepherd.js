@@ -97,7 +97,6 @@ async function botGoto(bot, position, xzRange) {
     let goal = new GoalNearXZY(vec.x, vec.y, vec.z, xzRange, 1.0);
     try {
         await bot.pathfinder.goto(goal);
-        bot.watchdog.kick();
         return true;
     } catch (err) {
         if (err.name === 'GoalChanged') {
@@ -233,6 +232,7 @@ async function shepherdWorkloop(bot) {
         let sheep = sheeputil.findAvailableSheep(bot, colormask);
         if (!sheep) {
             // Go idle
+            bot.watchdog.kick();
             await botGoto(bot, config.sheep.idlePosition, 1.0);
             continue;
         }
@@ -249,7 +249,7 @@ async function shepherdWorkloop(bot) {
         await inventory.equipItem(bot, "shears", "hand");
         bot.useOn(sheep);
         console.log("Shearing");
-        await bot.waitForTicks(1);
+        await bot.waitForTicks(2);
     }
 }
 

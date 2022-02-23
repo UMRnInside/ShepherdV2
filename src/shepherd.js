@@ -37,6 +37,7 @@ function makeShepherd(host, port, username, password, config) {
     bot.loadPlugin(watchdog);
     bot.loadPlugin(pathfinder);
     bot.pathfinder.thinkTimeout = 30000;
+    bot.on("playerCollect", onCollect);
 
     bot.shepherd = {};
     // Note: reload scheduler when bot is reloaded

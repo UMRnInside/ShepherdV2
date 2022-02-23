@@ -21,6 +21,7 @@ function makeShepherd(host, port, username, password, config) {
         }
     });
     function onTimeout() {
+        console.log("Watchdog reset action")
         if (config.watchdog.resetAction === "quit") {
             bot.quit();
         } else {
@@ -203,6 +204,10 @@ async function takeOneShears(bot) {
 async function shepherdWorkloop(bot) {
     bot.watchdog.start();
     console.log("Entering workloop");
+    const maxRepeats = 25;
+    let lastSheep = null;
+    let repeated = 0;
+
     while (bot.shepherd.working) {
         if (!bot.shepherd.working || bot.hasOngoingReset) return;
 
@@ -231,10 +236,21 @@ async function shepherdWorkloop(bot) {
         let colormask = config.sheep.colormask;
         let sheep = sheeputil.findAvailableSheep(bot, colormask);
         if (!sheep) {
+            lastSheep = null;
             // Go idle
             bot.watchdog.kick();
             await botGoto(bot, config.sheep.idlePosition, 1.0);
             continue;
+        }
+        if (sheep === lastSheep) {
+            repeated += 1;
+        } else {
+            lastSheep = sheep;
+            repeated = 0;
+        }
+        if (repeated > maxRepeats) {
+            console.log("Desynchronization detected!");
+            bot.watchdog.resetAction();
         }
         console.log("Found sheep at", sheep.position);
 

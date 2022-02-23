@@ -27,6 +27,12 @@ function makeShepherd(host, port, username, password, config) {
             Reset();
         }
     }
+    function onCollect(collector, collected) {
+        if (collector.username === bot.username) {
+            console.log("Item collected.");
+            bot.watchdog.kick();
+        }
+    }
 
     bot.loadPlugin(watchdog);
     bot.loadPlugin(pathfinder);
@@ -238,12 +244,10 @@ async function shepherdWorkloop(bot) {
             distance = bot.entity.position.distanceTo(sheep.position);
         }
         bot.lookAt(sheep.position, true);
-        bot.watchdog.kick();
         // TODO: hardcoded item name "shears"
         await inventory.equipItem(bot, "shears", "hand");
         bot.useOn(sheep);
         console.log("Shearing");
-        bot.watchdog.kick();
         await bot.waitForTicks(1);
     }
 }

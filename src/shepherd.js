@@ -73,6 +73,7 @@ function makeShepherd(host, port, username, password, config) {
         defaultMove.allowParkour = true;
         defaultMove.allowSprinting = false;
         bot.pathfinder.setMovements(defaultMove);
+        bot.mcData = mcData;
 
         await bot.waitForTicks(10);
         for (let i in config.login.sequence) {
@@ -158,6 +159,7 @@ async function storeWools(bot) {
 
 async function takeOneShears(bot) {
     let config = bot.shepherd.config;
+    const mcData = bot.mcData;
     bot.watchdog.kick();
     await botGoto(bot, config.shears.standingPosition, 0);
     await bot.lookAt(Vec3(config.shears.chestPosition));
@@ -192,8 +194,7 @@ async function takeOneShears(bot) {
         }
     }
     // End of copy-pasted part
-    // TODO: countItemById seems not working as expected
-    while (inventory.countItemById(bot, 359) <= 0) {
+    while (inventory.countItemById(bot, mcData.itemsByName.shears.id) <= 0) {
         let success = await withdrawItem("shears", 1);
         if (success) break;
         await bot.waitForTicks(60);
@@ -214,8 +215,7 @@ async function shepherdWorkloop(bot) {
 
         let config = bot.shepherd.config;
 
-        // TODO: hardcoded shears item id
-        let shearsCount = inventory.countItemById(bot, 359);
+        let shearsCount = inventory.countItemById(bot, mcData.itemsByName.shears.id);
         if (shearsCount <= 0) {
             await takeOneShears(bot);
             await botGoto(bot, config.sheep.idlePosition, 1.0);

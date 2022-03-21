@@ -1,5 +1,6 @@
 {
     "version": "1.12.2",
+    "viewDistance": 8,
     "sheep": {
         "autostart": true,
         "shearDistance": 1.5,

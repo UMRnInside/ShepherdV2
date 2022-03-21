@@ -15,6 +15,7 @@ function makeShepherd(host, port, username, password, config) {
         username: username,
         password: password,
         version: config.version,
+        viewDistance: config.viewDistance ?? 6,
         defaultChatPatterns: false,
         watchdogConfig: {
             timeout: config.watchdog.timeout ?? 30000,

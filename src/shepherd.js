@@ -25,6 +25,8 @@ function makeShepherd(host, port, username, password, config) {
         console.log("Watchdog reset action")
         if (config.watchdog.resetAction === "quit") {
             bot.quit();
+        } else if (config.watchdog.resetAction === "disconnect") {
+            bot.end();
         } else {
             Reset();
         }
@@ -127,8 +129,7 @@ async function storeWools(bot) {
     try {
         await botGoto(bot, standingPosition, 0.1);
         await bot.lookAt(lookPosition);
-        // TODO: hardcoded wool item id: 35
-        let woolCount = inventory.countItemById(bot, 35);
+        let woolCount = inventory.countWools(bot);
         if (config.storage.useChests) {
             const chest = await bot.openContainer(bot.blockAt(lookPosition));
             console.log(`Depositing ${woolCount} wools...`);
@@ -138,7 +139,7 @@ async function storeWools(bot) {
             let chestEmptySlot = 0;
             for (let i = chest.inventoryStart;i<=chest.inventoryEnd;i++) {
                 if (!slots[i]) continue;
-                if (slots[i].type !== 35) continue;
+                if (!inventory.itemIsWool(bot, slots[i])) continue;
                 while (slots[chestEmptySlot] 
                     && chestEmptySlot < chest.inventoryStart) chestEmptySlot++;
                 await bot.moveSlotItem(i, chestEmptySlot);
@@ -149,7 +150,13 @@ async function storeWools(bot) {
             chest.close();
         } else {
             console.log(`Tossing ${woolCount} wools...`);
-            await bot.toss(35, null, woolCount);
+            // TODO: faster tossing
+            const items = bot.inventory.items();
+            for (let i in items) {
+                if (!inventory.itemIsWool(bot, items[i])) continue;
+                await bot.tossStack(items[i]);
+                await bot.waitForTicks(4);
+            }
         }
     } catch (err) {
         console.log(err);
@@ -207,6 +214,7 @@ async function shepherdWorkloop(bot) {
     bot.watchdog.start();
     console.log("Entering workloop");
     const maxRepeats = 25;
+    const mcData = bot.mcData ?? require('minecraft-data')(bot.version);
     let lastSheep = null;
     let repeated = 0;
 
@@ -217,13 +225,15 @@ async function shepherdWorkloop(bot) {
 
         let shearsCount = inventory.countItemById(bot, mcData.itemsByName.shears.id);
         if (shearsCount <= 0) {
+            console.log("Taking shears...");
             await takeOneShears(bot);
             await botGoto(bot, config.sheep.idlePosition, 1.0);
             continue;
         }
         // TODO: hardcoded wool item id
-        let woolCount = inventory.countItemById(bot, 35);
+        let woolCount = inventory.countWools(bot);
         if (woolCount >= config.storage.maxWoolInsideInventory) {
+            console.log("Storing wools...");
             await storeWools(bot);
             await botGoto(bot, config.sheep.idlePosition, 1.0);
             continue;
@@ -231,6 +241,7 @@ async function shepherdWorkloop(bot) {
 
         let droppedWool = sheeputil.findDroppedWool(bot, config);
         if (droppedWool) {
+            console.log("Picking dropped wool...");
             await botGoto(bot, droppedWool.position, 0.5);
             continue;
         }

@@ -21,6 +21,8 @@ function findAvailableSheep(bot, woolMask) {
     let SheepMaxZ = bot.shepherd.config.sheep.maxZ;
     let minY = bot.shepherd.config.sheep.minY;
     let maxY = bot.shepherd.config.sheep.maxY;
+    const isBabyIndex = bot.supportFeature('itemsAreAlsoBlocks') ? 12 : 15;
+    const colorIndex = bot.supportFeature('itemsAreAlsoBlocks') ? 13 : 16;
 
     let dist = defaultDist;
     if (bot.shepherd.scheduler) {
@@ -40,7 +42,7 @@ function findAvailableSheep(bot, woolMask) {
         let entity = bot.entities[key];
         if (entity.mobType !== "Sheep")
             continue
-        if (entity.metadata[12]) // Is baby, tested in 1.12.2
+        if (entity.metadata[isBabyIndex]) // Is baby, tested in 1.12.2
             continue
 
         if (!isInRange(SheepMinX, entity.position.x, SheepMaxX))
@@ -53,7 +55,7 @@ function findAvailableSheep(bot, woolMask) {
 
         // Adapted for 1.8, change 13 to 16 in 1.9+?
         // 13 is for 1.12
-        const sheep_info = entity.metadata[13]
+        const sheep_info = entity.metadata[colorIndex];
 
         if (sheep_info & 16) // Sheared
             continue
@@ -91,6 +93,7 @@ function findDroppedWool(bot) {
     let SheepMaxZ = bot.shepherd.config.sheep.maxZ;
     let minY = bot.shepherd.config.sheep.minY;
     let maxY = bot.shepherd.config.sheep.maxY;
+    const mcData = bot.mcData ?? require('minecraft-data')(bot.version);
 
     let dist = defaultDist;
     if (bot.shepherd.scheduler) {
@@ -98,7 +101,6 @@ function findDroppedWool(bot) {
             return bot.shepherd.scheduler.getCostToEntity(entity);
         }
     }
-
 
     function isInRange(l, x, r) {
         return l<=x && x<=r
@@ -111,12 +113,19 @@ function findDroppedWool(bot) {
         if (entity.objectType !== "Item" && entity.objectType !== "Dropped item") // in 1.15.2 and 1.12.2
             continue
 
-        // Tested 1.12.2
-        let itemMetadata = entity.metadata[6];
-        if (!itemMetadata || itemMetadata.blockId !== 35)
-            continue;
-        //if (entity.entityType !== 35) // Wool in 1.15.2
-        //    continue
+        if (bot.supportFeature("itemsAreAlsoBlocks")) {
+            // Tested 1.12.2
+            if (entity.entityType !== mcData.itemsByName.wool.id)
+                continue;
+        } else {
+            const whiteWoolId = mcData.itemsByName.white_wool.id;
+            const blackWoolId = mcData.itemsByName.black_wool.id;
+            // In 1.16.5
+            let itemMetadata = entity.metadata[7];
+            if (!itemMetadata) continue;
+            if (itemMetadata.itemId < whiteWoolId || itemMetadata.itemId > blackWoolId)
+                continue;
+        }
 
         if (!isInRange(SheepMinX, entity.position.x, SheepMaxX))
             continue

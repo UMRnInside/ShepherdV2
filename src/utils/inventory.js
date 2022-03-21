@@ -1,3 +1,4 @@
+const assert = require("assert");
 // almost copy-pasted from https://github.com/PrismarineJS/mineflayer/blob/master/examples/inventory.js
 
 function sayItems (bot, items = null) {
@@ -118,6 +119,32 @@ function countItemById(bot, minId, maxId = null) {
 
 }
 
+function itemIsWool(bot, item) {
+    if (!item) return false;
+    const mcData = bot.mcData ?? require('minecraft-data')(bot.version);
+    if (bot.supportFeature("itemsAreAlsoBlocks")) {
+        return item.type === mcData.itemsByName.wool.id;
+    }
+    // TODO: continuous wool id assumed
+    const whiteWoolId = mcData.itemsByName.white_wool.id;
+    const blackWoolId = mcData.itemsByName.black_wool.id;
+    assert.ok(whiteWoolId + 15 === blackWoolId, "Item id for wool is not continuous");
+    return whiteWoolId <= item.type && item.type <= blackWoolId;
+}
+
+function countWools(bot) {
+    const mcData = bot.mcData ?? require('minecraft-data')(bot.version);
+    let count = 0;
+    if (bot.supportFeature("itemsAreAlsoBlocks")) {
+        return countItemById(bot, mcData.itemsByName.wool.id);
+    }
+    // TODO: continuous wool id assumed
+    const whiteWoolId = mcData.itemsByName.white_wool.id;
+    const blackWoolId = mcData.itemsByName.black_wool.id;
+    assert.ok(whiteWoolId + 15 === blackWoolId, "Item id for wool is not continuous");
+    return countItemById(bot, whiteWoolId, blackWoolId);
+}
+
 module.exports = {
     sayItems,
     tossItem,
@@ -127,5 +154,7 @@ module.exports = {
     craftItem,
     itemToString,
     itemByName,
-    countItemById
+    countItemById,
+    itemIsWool,
+    countWools
 }

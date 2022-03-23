@@ -115,7 +115,8 @@ function findDroppedWool(bot) {
 
         if (bot.supportFeature("itemsAreAlsoBlocks")) {
             // Tested 1.12.2
-            if ((entity.metadata[6] ?? -1) !== mcData.itemsByName.wool.id)
+            let itemMetadata = entity.metadata[6];
+            if (!itemMetadata || (itemMetadata.blockId ?? -1) !== mcData.itemsByName.wool.id)
                 continue;
         } else {
             const whiteWoolId = mcData.itemsByName.white_wool.id;

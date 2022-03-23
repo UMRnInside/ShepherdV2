@@ -4,6 +4,7 @@
         "minecraft-protocol": "^1.32.1",
         "mineflayer": "^4.1.0",
         "mineflayer-pathfinder": "^1.9.1",
-        "mineflayer-simple-watchdog": "github:UMRnInside/mineflayer-simple-watchdog"
+        "mineflayer-simple-watchdog": "github:UMRnInside/mineflayer-simple-watchdog",
+        "prismarine-nbt": "^2.2.1"
     }
 }

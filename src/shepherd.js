@@ -74,7 +74,7 @@ function makeShepherd(host, port, username, password, config) {
         defaultMove.allow1by1towers = false;
         defaultMove.canDig = false;
         defaultMove.allowParkour = true;
-        defaultMove.allowSprinting = false;
+        defaultMove.allowSprinting = true;
         bot.pathfinder.setMovements(defaultMove);
         bot.mcData = mcData;
 

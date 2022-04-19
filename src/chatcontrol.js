@@ -59,8 +59,8 @@ function addChatControl(bot, config) {
                 console.log("first shear:", inventory.itemByName(bot, "shears"));
                 break;
             case /^setmask \d+/.test(message):
-                let match = /^setmask (\d+)$/.exec(message);
-                let mask = parseInt(match[1], 10);
+                let match2 = /^setmask (\d+)$/.exec(message);
+                let mask = parseInt(match2[1], 10);
                 bot.shepherd.config.sheep.colormask = mask;
                 console.log(`Wool color mask set: ${mask}`);
                 break;

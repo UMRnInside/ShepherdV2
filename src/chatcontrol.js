@@ -55,13 +55,17 @@ function addChatControl(bot, config) {
                     bot.whisper(username, "Bot is already working!");
                 }
                 break;
-            case /^count$/.test(message):
-                let woolCount = inventory.countItemById(bot, 35);
-                let shearsCount = inventory.countItemById(bot, 359);
-                bot.whisper(username, `${woolCount} wools, ${shearsCount} shears.`);
-                break;
             case /^dumpShears$/.test(message):
                 console.log("first shear:", inventory.itemByName(bot, "shears"));
+                break;
+            case /^setmask \d+/.test(message):
+                let match = /^setmask (\d+)$/.exec(message);
+                let mask = parseInt(match[1], 10);
+                bot.shepherd.config.sheep.colormask = mask;
+                console.log(`Wool color mask set: ${mask}`);
+                break;
+            case /^getmask/.test(message):
+                bot.chat(`${bot.shepherd.config.sheep.colormask}`);
                 break;
         }
     });

@@ -41,10 +41,7 @@ function makeShepherd(host, port, username, password, config) {
 
     bot.loadPlugin(watchdog);
     bot.loadPlugin(pathfinder);
-    bot.pathfinder.thinkTimeout = 30000;
-    bot.on("playerCollect", onCollect);
 
-    bot.shepherd = {};
     // Note: reload scheduler when bot is reloaded
     let schedulerFactory = schedulers[config.sheep.scheduler];
     if (!schedulerFactory) {
@@ -52,23 +49,30 @@ function makeShepherd(host, port, username, password, config) {
         console.log(`Scheduler must be one of '${Object.keys(schedulers)}'`);
         return null;
     }
-    bot.shepherd.scheduler = schedulerFactory(bot, config.sheep);
 
-    chatControl.addChatControl(bot, config.chatControl);
+    bot.once('inject_allowed', () => {
+        bot.on("playerCollect", onCollect);
 
-    bot.shepherd.config = config;
-    bot.shepherd.hasOngoingReset = false;
-    bot.shepherd.workloop = async function() {
-        await shepherdWorkloop(bot);
-    }
-    bot.shepherd.reset = async function() {
-        await Reset(bot);
-    };
+        bot.shepherd = {};
+        bot.shepherd.scheduler = schedulerFactory(bot, config.sheep);
 
-    bot.shepherd.working = false;
+        bot.shepherd.config = config;
+        bot.shepherd.hasOngoingReset = false;
+        bot.shepherd.workloop = async function() {
+            await shepherdWorkloop(bot);
+        }
+        bot.shepherd.reset = async function() {
+            await Reset(bot);
+        };
+
+        bot.shepherd.working = false;
+    });
 
     bot.once('spawn', async () => {
         console.log("first spawn");
+        bot.pathfinder.thinkTimeout = 30000;
+        chatControl.addChatControl(bot, config.chatControl);
+
         const mcData = require("minecraft-data")(bot.version);
         const defaultMove = new Movements(bot, mcData);
         defaultMove.allow1by1towers = false;
@@ -220,7 +224,7 @@ async function shepherdWorkloop(bot) {
     let repeated = 0;
 
     while (bot.shepherd.working) {
-        if (!bot.shepherd.working || bot.hasOngoingReset) return;
+        if (!bot.shepherd.working || bot.shepherd.hasOngoingReset) return;
 
         let config = bot.shepherd.config;
 
@@ -283,7 +287,7 @@ async function shepherdWorkloop(bot) {
 }
 
 async function Reset(bot) {
-    if (bot.hasOngoingReset) return;
+    if (bot.shepherd.hasOngoingReset) return;
     console.log("Reset!");
     bot.watchdog.stop();
     bot.shepherd.hasOngoingReset = true;
@@ -296,7 +300,7 @@ async function Reset(bot) {
         bot.chat(config.reset.sequence[i]);
         await bot.waitForTicks(config.reset.gapTicks);
     }
-    bot.hasOngoingReset = false;
+    bot.shepherd.hasOngoingReset = false;
     if (config.reset.backToIdlePosition) {
         let idlePosition = Vec3(config.sheep.idlePosition);
         await botGoto(bot, idlePosition);

@@ -40,7 +40,7 @@ function findAvailableSheep(bot, woolMask) {
     let target = null;
     for (let key in bot.entities) {
         let entity = bot.entities[key];
-        if (entity.mobType !== "Sheep")
+        if (entity.displayName !== "Sheep")
             continue
         if (entity.metadata[isBabyIndex]) // Is baby, tested in 1.12.2
             continue
@@ -110,7 +110,7 @@ function findDroppedWool(bot) {
         let entity = bot.entities[key];
         if (!entity.onGround)
             continue
-        if (entity.objectType !== "Item" && entity.objectType !== "Dropped item") // in 1.15.2 and 1.12.2
+        if (entity.displayName !== "Item" && entity.displayName !== "Dropped item") // in 1.15.2 and 1.12.2
             continue
 
         if (bot.supportFeature("itemsAreAlsoBlocks")) {

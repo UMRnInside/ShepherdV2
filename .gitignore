@@ -1,6 +1,7 @@
 # ShepherdV2 part
 config.json
 etc/*.json
+launcher_accounts.json
 
 
 # Logs

@@ -1,10 +1,9 @@
 {
     "main": "src/main.js",
     "dependencies": {
-        "minecraft-protocol": "^1.32.1",
-        "mineflayer": "^4.1.0",
-        "mineflayer-pathfinder": "^1.9.1",
-        "mineflayer-simple-watchdog": "github:UMRnInside/mineflayer-simple-watchdog",
-        "prismarine-nbt": "^2.2.1"
-    }
+        "mineflayer": "^4.14.0",
+        "mineflayer-pathfinder": "^2.4.5",
+        "mineflayer-simple-watchdog": "github:UMRnInside/mineflayer-simple-watchdog"
+    },
+    "version": "0.0.0"
 }

@@ -29,7 +29,7 @@ function makeShepherd(host, port, username, password, config) {
         } else if (config.watchdog.resetAction === "disconnect") {
             bot.end();
         } else {
-            Reset();
+            Reset(bot);
         }
     }
     function onCollect(collector, collected) {
@@ -105,6 +105,10 @@ function makeShepherd(host, port, username, password, config) {
 async function botGoto(bot, position, xzRange) {
     const vec = Vec3(position);
     let goal = new GoalNearXZY(vec.x, vec.y, vec.z, xzRange, 1.0);
+    return await botGotoGoal(bot, goal);
+}
+
+async function botGotoGoal(bot, goal) {
     try {
         await bot.pathfinder.goto(goal);
         return true;
@@ -116,10 +120,10 @@ async function botGoto(bot, position, xzRange) {
         if (err.name === 'NoPath') {
             console.log("Warning: NoPath");
             console.log(bot.entity.position);
-            console.log(vec);
+            console.log(goal);
             return false;
         }
-        console.log(vec);
+        console.log(goal);
         console.log(err);
         bot.pathfinder.stop();
     }
@@ -268,21 +272,18 @@ async function shepherdWorkloop(bot) {
         if (repeated > maxRepeats) {
             console.log("Desynchronization detected!");
             bot.watchdog.resetAction();
+            return;
         }
-        console.log("Found sheep at", sheep.position);
 
-        let distance = bot.entity.position.distanceTo(sheep.position);
-        while (distance > config.sheep.shearDistance) {
-            console.log("Not near enough, approaching...")
-            await botGoto(bot, sheep.position, config.sheep.shearDistance);
-            distance = bot.entity.position.distanceTo(sheep.position);
-        }
+        console.log("Found sheep at", sheep.position);
+        const goal = new GoalFollow(sheep, config.sheep.shearDistance);
+        await botGotoGoal(bot, goal);
         bot.lookAt(sheep.position, true);
         // TODO: hardcoded item name "shears"
         await inventory.equipItem(bot, "shears", "hand");
         bot.useOn(sheep);
         console.log("Shearing");
-        await bot.waitForTicks(2);
+        await bot.waitForTicks(5);
     }
 }
 

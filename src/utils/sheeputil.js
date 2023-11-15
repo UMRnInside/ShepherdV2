@@ -14,6 +14,20 @@ function isPossiblyStucked(bot, entityPosition) {
     return block.boundingBox === "block";
 }
 
+function getSheepIndexes(version) {
+    // https://wiki.vg/Entity_metadata#Sheep
+    function getBabyIndex(version) {
+        if (version['<=']("1.12.2"))
+            return 12;
+        if (version['<=']("1.17.1"))
+            return 15;
+        return 16;
+    }
+    const isBabyIndex = getBabyIndex(version);
+    const colorIndex = isBabyIndex + 1;
+    return { isBabyIndex, colorIndex };
+}
+
 function findAvailableSheep(bot, woolMask) {
     let SheepMinX = bot.shepherd.config.sheep.minX;
     let SheepMaxX = bot.shepherd.config.sheep.maxX;
@@ -21,8 +35,7 @@ function findAvailableSheep(bot, woolMask) {
     let SheepMaxZ = bot.shepherd.config.sheep.maxZ;
     let minY = bot.shepherd.config.sheep.minY;
     let maxY = bot.shepherd.config.sheep.maxY;
-    const isBabyIndex = bot.supportFeature('itemsAreAlsoBlocks') ? 12 : 15;
-    const colorIndex = bot.supportFeature('itemsAreAlsoBlocks') ? 13 : 16;
+    const { isBabyIndex, colorIndex } = getSheepIndexes(bot.registry.version);
 
     let dist = defaultDist;
     if (bot.shepherd.scheduler) {
@@ -105,14 +118,23 @@ function findDroppedWool(bot) {
     function isInRange(l, x, r) {
         return l<=x && x<=r
     }
+
     let target = null;
     for (let key in bot.entities) {
         let entity = bot.entities[key];
         if (!entity.onGround)
             continue
-        if (entity.displayName !== "Item" && entity.displayName !== "Dropped item") // in 1.15.2 and 1.12.2
+
+        if (!isInRange(SheepMinX, entity.position.x, SheepMaxX))
+            continue
+        if (!isInRange(SheepMinZ, entity.position.z, SheepMaxZ))
+            continue
+        if (!isInRange(minY, entity.position.y, maxY))
             continue
 
+        // in 1.15.2 and 1.12.2
+        if (entity.displayName !== "Item" && entity.displayName !== "Dropped item")
+            continue
         if (bot.supportFeature("itemsAreAlsoBlocks")) {
             // Tested 1.12.2
             let itemMetadata = entity.metadata[6];
@@ -121,19 +143,17 @@ function findDroppedWool(bot) {
         } else {
             const whiteWoolId = mcData.itemsByName.white_wool.id;
             const blackWoolId = mcData.itemsByName.black_wool.id;
-            // In 1.16.5
-            let itemMetadata = entity.metadata[7];
-            if (!itemMetadata) continue;
-            if (itemMetadata.itemId < whiteWoolId || itemMetadata.itemId > blackWoolId)
+            let itemId = null;
+            for (let candidate of entity.metadata) {
+                if (candidate?.itemId) {
+                    itemId = candidate.itemId;
+                    break;
+                }
+            }
+            if (itemId === null) continue;
+            if (itemId < whiteWoolId || itemId > blackWoolId)
                 continue;
         }
-
-        if (!isInRange(SheepMinX, entity.position.x, SheepMaxX))
-            continue
-        if (!isInRange(SheepMinZ, entity.position.z, SheepMaxZ))
-            continue
-        if (!isInRange(minY, entity.position.y, maxY))
-            continue
 
         if (isPossiblyStucked(bot, entity.position)) {
             continue;
